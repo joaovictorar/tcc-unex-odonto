@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assistente Unex</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="start" id="start" onclick="startApp()">
+  <div class="arrow">👇</div>
+  <div class="start-card">
+    <div class="tooth">🦷</div>
+    <h1>TOQUE AQUI</h1>
+    <p>Depois de tocar, eu vou falar onde apertar.</p>
+    <button>🔊 COMEÇAR</button>
+  </div>
+</div>
+
+<main class="app">
+<header>
+  <div class="brand"><div class="logo">🦷</div><div><b>Clínica Odontológica</b><span>Unex</span></div></div>
+  <button class="sound" onclick="repeatAudio()">🔊</button>
+</header>
+
+<section class="guide">
+  <div class="avatar">👩‍⚕️</div>
+  <div class="speech">
+    <small>Assistente falando</small>
+    <p id="text">Olá! Eu vou te ajudar.</p>
+  </div>
+</section>
+
+<section class="hint">
+  <div>👇</div>
+  <div><b id="title">Toque em uma opção abaixo</b><span>Escolha pela cor, número ou imagem</span></div>
+</section>
+
+<button class="listen" onclick="repeatOptions()">🔊 Ouvir onde tocar</button>
+<section id="buttons" class="buttons"></section>
+
+<nav>
+  <button onclick="home()">🏠 Início</button>
+  <button onclick="goBack()">⬅️ Voltar</button>
+</nav>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
