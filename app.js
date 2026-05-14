@@ -1,3 +1,59 @@
+
+
+// ÁUDIO DA TELA INICIAL
+let introAlreadySpoken = false;
+
+function introAudio() {
+  setTimeout(() => {
+    speakIntroMessage();
+  }, 700);
+
+  document.addEventListener("click", speakIntroMessageOnce, { once: true });
+  document.addEventListener("touchstart", speakIntroMessageOnce, { once: true });
+  document.addEventListener("keydown", speakIntroMessageOnce, { once: true });
+}
+
+function speakIntroMessageOnce() {
+  if (introAlreadySpoken) return;
+  speakIntroMessage();
+}
+
+function speakIntroMessage() {
+  if (introAlreadySpoken) return;
+
+  introAlreadySpoken = true;
+
+  if (!("speechSynthesis" in window)) return;
+
+  try {
+    speechSynthesis.cancel();
+
+    const msg = new SpeechSynthesisUtterance(
+      "Toque no botão amarelo para iniciar. Depois eu vou falar todas as opções para você."
+    );
+
+    msg.lang = "pt-BR";
+    msg.rate = 0.9;
+    msg.pitch = 1.05;
+    msg.volume = 1;
+
+    const voice = getVoice();
+    if (voice) msg.voice = voice;
+
+    speechSynthesis.speak(msg);
+
+    setTimeout(() => {
+      if (!speechSynthesis.speaking) {
+        introAlreadySpoken = false;
+      }
+    }, 1000);
+
+  } catch (error) {
+    introAlreadySpoken = false;
+  }
+}
+
+
 let currentText = "";
 let currentOptions = [];
 let historyStack = [];
@@ -12,6 +68,7 @@ if ("speechSynthesis" in window) {
 }
 
 function startApp() {
+  introAlreadySpoken = true;
   document.getElementById("start").style.display = "none";
   speechSynthesis.cancel();
   home();
