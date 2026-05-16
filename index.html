@@ -6,14 +6,15 @@
 <title>Assistente Unex</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body onload="introAudio()">
-<div class="start" id="start" onclick="startApp()">
+<body onload="startInitialAudio()">
+<div class="start" id="start">
   <div class="arrow">👇</div>
   <div class="start-card">
     <div class="tooth">🦷</div>
     <h1>TOQUE AQUI</h1>
-    <p>Toque no botão amarelo para iniciar.</p>
-    <button class="start-button">🔊 COMEÇAR</button>
+    <p>Para começar o atendimento, clique no botão amarelo.</p>
+    <button class="start-button" onclick="startApp()">🔊 COMEÇAR</button>
+    <div id="audioNotice" class="audio-notice">🔊 Se não ouvir, toque na tela</div>
   </div>
 </div>
 

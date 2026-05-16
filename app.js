@@ -1,57 +1,96 @@
 
+// ÁUDIO INICIAL ROBUSTO
+let initialAudioWasSpoken = false;
+let initialAudioUtterance = null;
+let initialAudioAttempts = 0;
 
-// ÁUDIO DA TELA INICIAL
-let introAlreadySpoken = false;
+function startInitialAudio() {
+  tryToSpeakInitialAudio();
 
-function introAudio() {
+  ["click", "touchstart", "pointerdown", "keydown"].forEach(eventName => {
+    document.addEventListener(eventName, () => {
+      if (!initialAudioWasSpoken && document.getElementById("start")?.style.display !== "none") {
+        speakInitialAudio(true);
+      }
+    }, { once: true });
+  });
+
+  if ("speechSynthesis" in window) {
+    speechSynthesis.onvoiceschanged = () => {
+      if (!initialAudioWasSpoken) {
+        tryToSpeakInitialAudio();
+      }
+    };
+  }
+}
+
+function tryToSpeakInitialAudio() {
+  if (initialAudioWasSpoken || initialAudioAttempts >= 6) return;
+
+  initialAudioAttempts++;
+  speakInitialAudio(false);
+
   setTimeout(() => {
-    speakIntroMessage();
-  }, 700);
-
-  document.addEventListener("click", speakIntroMessageOnce, { once: true });
-  document.addEventListener("touchstart", speakIntroMessageOnce, { once: true });
-  document.addEventListener("keydown", speakIntroMessageOnce, { once: true });
+    if (!initialAudioWasSpoken && document.getElementById("start")?.style.display !== "none") {
+      tryToSpeakInitialAudio();
+    }
+  }, 1600);
 }
 
-function speakIntroMessageOnce() {
-  if (introAlreadySpoken) return;
-  speakIntroMessage();
-}
-
-function speakIntroMessage() {
-  if (introAlreadySpoken) return;
-
-  introAlreadySpoken = true;
-
+function speakInitialAudio(fromUserAction) {
   if (!("speechSynthesis" in window)) return;
+  if (initialAudioWasSpoken) return;
 
   try {
     speechSynthesis.cancel();
+    speechSynthesis.resume();
 
-    const msg = new SpeechSynthesisUtterance(
-      "Toque no botão amarelo para iniciar. Depois eu vou falar todas as opções para você."
+    initialAudioUtterance = new SpeechSynthesisUtterance(
+      "Para começar o atendimento, clique no botão amarelo."
     );
 
-    msg.lang = "pt-BR";
-    msg.rate = 0.9;
-    msg.pitch = 1.05;
-    msg.volume = 1;
+    initialAudioUtterance.lang = "pt-BR";
+    initialAudioUtterance.rate = 0.86;
+    initialAudioUtterance.pitch = 1.04;
+    initialAudioUtterance.volume = 1;
 
-    const voice = getVoice();
-    if (voice) msg.voice = voice;
+    const voices = speechSynthesis.getVoices();
+    const voice =
+      voices.find(v => v.lang.includes("pt") && v.name.toLowerCase().includes("google")) ||
+      voices.find(v => v.lang.includes("pt") && v.name.toLowerCase().includes("maria")) ||
+      voices.find(v => v.lang.includes("pt")) ||
+      voices[0];
 
-    speechSynthesis.speak(msg);
+    if (voice) initialAudioUtterance.voice = voice;
 
-    setTimeout(() => {
-      if (!speechSynthesis.speaking) {
-        introAlreadySpoken = false;
+    initialAudioUtterance.onstart = () => {
+      initialAudioWasSpoken = true;
+    };
+
+    initialAudioUtterance.onerror = () => {
+      if (!fromUserAction) initialAudioWasSpoken = false;
+    };
+
+    speechSynthesis.speak(initialAudioUtterance);
+
+    let resumeCount = 0;
+    const resumeInterval = setInterval(() => {
+      speechSynthesis.resume();
+      resumeCount++;
+      if (!speechSynthesis.speaking || resumeCount > 8) {
+        clearInterval(resumeInterval);
       }
-    }, 1000);
+    }, 250);
 
   } catch (error) {
-    introAlreadySpoken = false;
+    initialAudioWasSpoken = false;
   }
 }
+
+
+
+
+
 
 
 let currentText = "";
@@ -68,7 +107,7 @@ if ("speechSynthesis" in window) {
 }
 
 function startApp() {
-  introAlreadySpoken = true;
+  initialAudioWasSpoken = true;
   document.getElementById("start").style.display = "none";
   speechSynthesis.cancel();
   home();
@@ -296,7 +335,7 @@ function marcar() {
     ${card("2","😖","Dor de dente","Atendimento com prioridade","red","confirmarTipo('dor de dente')")}
     ${card("3","🦷","Tirar um dente","Quando precisa extrair","purple","confirmarTipo('tirar um dente')")}
     ${card("4","✨","Melhorar sorriso","Avaliação estética","yellow","confirmarTipo('melhorar meu sorriso')")}
-    ${card("5","🪥","Limpar dentes","Limpeza e prevenção","teal","confirmarTipo('limpar meus dentes')")}
+    ${card("5","🪥","Limpar dentes","Limpeza e prevenção","orange","confirmarTipo('limpar meus dentes')")}
     ${card("6","🆕","Primeira vez aqui","Primeiro atendimento","green","confirmarTipo('primeira vez aqui')")}
     ${card("7","❓","Preciso de ajuda","Falar com atendimento","pink","contato()")}
   `);
@@ -308,7 +347,7 @@ function marcar() {
       "Opção 2, botão vermelho: estou com dor de dente.",
       "Opção 3, botão roxo: quero tirar um dente.",
       "Opção 4, botão amarelo: quero melhorar meu sorriso.",
-      "Opção 5, botão verde água: quero limpar meus dentes.",
+      "Opção 5, botão laranja: quero limpar meus dentes.",
       "Opção 6, botão verde: primeira vez aqui.",
       "Opção 7, botão rosa: não sei, preciso de ajuda."
     ]
@@ -444,7 +483,7 @@ function pos() {
     ${card("2","🚫🍲","Não comer quente","Prefira frio ou gelado","orange","repeatAudio()")}
     ${card("3","🚫💦","Não fazer bochecho","Não mexa no local","red","repeatAudio()")}
     ${card("4","💊","Tomar remédio","Como foi pedido","blue","repeatAudio()")}
-    ${card("5","🥤","Tomar gelado","Ajuda na recuperação","teal","repeatAudio()")}
+    ${card("5","🥤","Tomar gelado","Ajuda na recuperação","orange","repeatAudio()")}
     ${card("6","🪥","Escovar normalmente","Com cuidado","green","repeatAudio()")}
     ${card("7","📅","Voltar em 7 dias","Para retirar os pontos","purple","repeatAudio()")}
   `);
@@ -456,7 +495,7 @@ function pos() {
       "Opção 2, botão laranja: não comer quente. Prefira frio ou gelado.",
       "Opção 3, botão vermelho: não fazer bochecho. Não mexa no local.",
       "Opção 4, botão azul: tomar remédio como foi pedido.",
-      "Opção 5, botão verde água: tomar gelado. Ajuda na recuperação.",
+      "Opção 5, botão laranja: tomar gelado. Ajuda na recuperação.",
       "Opção 6, botão verde: escovar normalmente, com cuidado.",
       "Opção 7, botão roxo: voltar em sete dias para retirar os pontos."
     ]
